@@ -32,12 +32,18 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'codebase',
+    'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',     # this has to be added when using allauth. Missing in the official docs of allauth 
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -76,11 +82,21 @@ WSGI_APPLICATION = 'Tweeter.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'Tweeter_db',
+        'USER': 'root',
+        'PASSWORD': 'tweet1234',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -119,3 +135,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGIN_REDIRECT_URL = 'login_redirect'
+
+LOGIN_URL = 'login'
+
+SITE_ID = 1
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL  = '/media/'

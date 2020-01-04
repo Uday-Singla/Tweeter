@@ -1,0 +1,47 @@
+{% extends 'codebase/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+      <div class="content-section">
+        <div class="media">
+                {% if user.socialaccount_set.exists %}
+                        <img class="rounded-circle account-img" src="{{user.socialaccount_set.all.0.extra_data.picture}}">
+                {% else %}
+                        <img class="rounded-circle account-img" src="{{user.profile.dp.url}}">
+                {% endif %}
+          <div class="media-body">
+            <h2 class="account-heading">{{user_view.username}}</h2>
+            <p class="text-secondary">{{profile.city}}</p>
+            <p class="text-secondary">{{user_view.email}}</p>
+            <p class="text-secondary">{{profile.bio}}</p>
+            {% if user_view == user %}
+                <a href="{% url 'profile_edit' %}">Edit</a>
+            {% endif %}
+            <p class="text-secondary">Followers : {{profile.followers.count}}</p>
+            <p class="text-secondary">Following : {{profile.following.count}}</p>
+            {% if user_view in following %}
+              <a class="btn btn-outline-info" href="{% url 'unfollow' username=user_view.username %}">Unfollow</a>
+            {% else %}
+              <a class="btn btn-outline-info" href="{% url 'follow' username=user_view.username %}">Follow</a>
+            {% endif %}
+          </div>
+        </div>
+        <!-- FORM HERE -->
+      </div>
+      {% if user_view in following or user_view == user%}
+        {% for post in posts %}
+          <article class="media content-section">
+              <div class="media-body">
+                <div class="article-metadata">
+                  {{ post.user }}
+                  <small class="text-muted ml-2">{{ post.date |date:"d F, Y" }}</small>
+                  {% if user_view == user %}
+                    <a class="ml-2" href="{% url 'post_edit' pk=post.pk %}"> Edit </a>
+                  {% endif %}
+                </div>
+                <h2><a class="article-title" href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h2>
+                <p class="article-content">{{ post.content }}</p>
+              </div>
+            </article>
+      {% endfor %} 
+    {% endif %}            
+{% endblock %}

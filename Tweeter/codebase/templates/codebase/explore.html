@@ -1,0 +1,22 @@
+{% extends 'codebase/base.html' %}
+{% block content%}
+    {% for profile in profiles %}
+        <article class="media content-section">
+            <div class="media-body">
+                {% if user.socialaccount_set.exists %}
+                    <img class="rounded-circle list-img" src="{{user.socialaccount_set.all.0.extra_data.picture}}">
+                {% else %}
+                    <img class="rounded-circle list-img" src="{{user.profile.image.url}}">
+                {% endif %}
+                
+                <h2><a class="article-title" href="{% url 'profile' username=profile.user.username %}">{{ profile.user.username }}</a></h2>
+                
+                {% if profile.user in following %}
+                    <a class="btn btn-outline-info" href="{% url 'unfollow' username=profile.user.username %}">Unfollow</a>
+                {% else %}
+                    <a class="btn btn-outline-info" href="{% url 'follow' username=profile.user.username %}">Follow</a>
+                {% endif %}
+            </div>
+          </article>
+    {% endfor %}
+{% endblock %}
