@@ -4,9 +4,9 @@
         <article class="media content-section">
             <div class="media-body">
                 {% if user.socialaccount_set.exists %}
-                    <img class="rounded-circle list-img" src="{{user.socialaccount_set.all.0.extra_data.picture}}">
+                    <img class="rounded-circle list-img" src="{{profile.user.socialaccount_set.all.0.extra_data.picture}}">
                 {% else %}
-                    <img class="rounded-circle list-img" src="{{user.profile.image.url}}">
+                    <img class="rounded-circle list-img" src="{{profile.dp.url}}">
                 {% endif %}
                 
                 <h2><a class="article-title" href="{% url 'profile' username=profile.user.username %}">{{ profile.user.username }}</a></h2>
@@ -15,6 +15,13 @@
                     <a class="btn btn-outline-info" href="{% url 'unfollow' username=profile.user.username %}">Unfollow</a>
                 {% else %}
                     <a class="btn btn-outline-info" href="{% url 'follow' username=profile.user.username %}">Follow</a>
+                {% endif %}
+                {% if profile.user in following %}
+                    {% if profile.user in subscribers %}
+                        <a class="btn btn-outline-info" href="{% url 'unsubscribe' username=profile.user.username %}">Unsubscribe</a>
+                     {% else %}
+                        <a class="btn btn-outline-info" href="{% url 'subscribe' username=profile.user.username %}">Subscribe</a>
+                     {% endif %}
                 {% endif %}
             </div>
           </article>

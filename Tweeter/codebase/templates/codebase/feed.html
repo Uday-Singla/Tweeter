@@ -5,7 +5,7 @@
             <div class="media-body">
               <div class="article-metadata">
                 <a class="mr-2" href="{% url 'profile' username=post.user.username %}">{{ post.user }}</a>
-                <small class="text-muted">{{ post.date |date:"d F, Y" }}</small>
+                <small class="text-muted">{{ post.date }}</small>
                 {% if post.user == user %}
                   <a class="ml-2" href="{% url 'post_edit' pk=post.pk %}"> Edit </a>
                 {% endif %}

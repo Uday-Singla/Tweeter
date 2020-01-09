@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from . import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'm^jn)nf0+5nt=8nn_zz6g)l7)$4d=fwd)te+(z&)mio&#4hzkm'
+SECRET_KEY = config.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -56,6 +57,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# AUTHENTICATION_BACKENDS=(
+# 'social_core.backends.open_id.OpenIdAuth',
+# 'social_core.backends.google.GoogleOpenId',
+# 'social_core.backends.google.GoogleOAuth2',
+# 'django.contrib.auth.backends.ModelBackend',
+# )
+
 ROOT_URLCONF = 'Tweeter.urls'
 
 TEMPLATES = [
@@ -83,9 +91,9 @@ WSGI_APPLICATION = 'Tweeter.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Tweeter_db',
-        'USER': 'root',
-        'PASSWORD': 'tweet1234',
+        'NAME': config.DB_NAME,
+        'USER': config.USER,
+        'PASSWORD': config.DB_PASSWORD,
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -135,6 +143,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -147,5 +156,21 @@ SITE_ID = 1
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 MEDIA_URL  = '/media/'
+
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+
+SENDGRID_API_KEY = config.SENDGRID_API_KEY
+
+# Toggle sandbox mode (when running in DEBUG mode)
+#SENDGRID_SANDBOX_MODE_IN_DEBUG=True
+
+# echo to stdout or any other file-like object that is passed to the backend via the stream kwarg.
+SENDGRID_ECHO_TO_STDOUT=True
+
+#EMAIL_HOST = 'smtp.sendgrid.net'
+#EMAIL_HOST_USER = 'apikey'
+#EMAIL_HOST_PASSWORD = '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'
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = False
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

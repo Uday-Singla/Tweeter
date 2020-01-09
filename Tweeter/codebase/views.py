@@ -7,7 +7,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
-
+import sendgrid
+from sendgrid.helpers.mail import *
+from django.core.mail import send_mail
+import os 
+from Tweeter import config
 
 def register(request):
 
@@ -37,7 +41,7 @@ def register(request):
 @login_required
 def feed(request):
     context = {
-        'posts': Post.objects.filter(user__in=[following.user for following in Profile.objects.get(user=request.user).following.all()]) | Post.objects.filter(user=request.user)
+        'posts': Post.objects.filter(user__in=[following.user for following in Profile.objects.get(user=request.user).following.all()]).order_by('-date') | Post.objects.filter(user=request.user)
     }
     return render(request, 'codebase/feed.html', context)
 
@@ -48,8 +52,9 @@ def profile(request, username):
         'title': 'Profile',
         'profile': Profile.objects.get(user__username = username),
         'user_view': User.objects.get(username = username),
-        'posts': Post.objects.filter(user__username=username),
-        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])]
+        'posts': Post.objects.filter(user__username=username).order_by('-date'),
+        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+        'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
     }
     return render(request, 'codebase/profile.html', context)
 
@@ -58,14 +63,16 @@ def profile(request, username):
 def explore(request):
     context = {
         'profiles': Profile.objects.all(),
-        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])]
+        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+        'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])] 
     }
     return render(request, 'codebase/explore.html', context)
 
 
 @login_required
 def profile_new(request):
-    if not Profile.objects.filter(user=request.user):
+    
+    if Profile.objects.filter(user=request.user) is None:
         if request.method == 'POST':
             form = ProfileForm(request.POST)
             if form.is_valid():
@@ -87,18 +94,24 @@ def profile_new(request):
 
         context = {
         'profiles': Profile.objects.all(),
-        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])]
+        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+        'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
+
         }
+        
         return render(request, 'codebase/explore.html', context)
 
 @login_required
 def profile_edit(request):
     user = get_object_or_404(Profile, user=request.user)
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=user)
+        form = ProfileForm(request.POST, request.FILES or None, instance=user)
+        # Saving images can be a pain, don't forget to add
+        # <form method="POST" enctype="multipart/form-data"> in the edit template
         if form.is_valid():
             profile = form.save(commit=False)
             profile.user = request.user
+                       
             profile.save()
             return redirect('profile', username=profile.user.username)
     else:
@@ -126,12 +139,29 @@ def post_detail(request, pk):
 @login_required
 def post_new(request):
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
+        form = PostForm(request.POST, request.FILES or None)
+        # Saving images can be a pain, don't forget to add
+        # <form method="POST" enctype="multipart/form-data"> in the edit template
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
             post.date = timezone.now()
             post.save()
+
+            to_email = []
+            for subscriber in request.user.profile.subscribers.all():
+                to_email.append(subscriber.user.email)
+            
+            sg = sendgrid.SendGridAPIClient(config.SENDGRID_API_KEY)
+            from_email = Email("singla.uday2000@gmail.com")
+            subject = "Tweeter - New Post by " + request.user.username
+            content = Content("text/plain", "Visit Tweeter to check - " + "127.0.0.1:8000/post/" + str(post.pk))
+            mail = Mail(from_email, to_email, subject, content)
+            response = sg.send(mail)
+            print(response.status_code)
+            print(response.body)
+            print(response.headers)
+            print(to_email)
 
             return redirect('post_detail', pk=post.pk)
 
@@ -148,7 +178,9 @@ def post_edit(request, pk):
         post = get_object_or_404(Post, pk=pk)
     
     if request.method == "POST":
-        form = PostForm(request.POST, instance=post)
+        form = PostForm(request.POST, request.FILES or None, instance=post)
+        # Saving images can be a pain, don't forget to add
+        # <form method="POST" enctype="multipart/form-data"> in the edit template
         if form.is_valid():
             post_edit = form.save(commit=False)
             post_edit.user = request.user
@@ -192,8 +224,9 @@ def follow(request, username):
         'profile': Profile.objects.get(user__username = username),
         'user_view': User.objects.get(username = username),
         'posts': Post.objects.filter(user__username=username),
-        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])]
-    }
+        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+        'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
+}
 
     return render(request, 'codebase/profile.html', context)
 
@@ -203,13 +236,64 @@ def unfollow(request, username):
     
     Profile.objects.get(user=request.user).following.remove(Profile.objects.get(user__username=username))
     Profile.objects.get(user__username=username).followers.remove(Profile.objects.get(user=request.user))
+    Profile.objects.get(user=request.user).subscribed.remove(Profile.objects.get(user__username=username))
+    Profile.objects.get(user__username=username).subscribers.remove(Profile.objects.get(user=request.user))
+    
+    context = {
+        'title': 'Profile',
+        'profile': Profile.objects.get(user__username = username),
+        'user_view': User.objects.get(username = username),
+        'posts': Post.objects.filter(user__username=username),
+        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+        'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
+    }
+
+    return render(request, 'codebase/profile.html', context)
+
+@login_required
+def subscribe(request, username):
+
+    if User.objects.get(username=username) in [follower.user for follower in request.user.profile.following.all()]:
+    
+        Profile.objects.get(user=request.user).subscribed.add(Profile.objects.get(user__username=username))
+        Profile.objects.get(user__username=username).subscribers.add(Profile.objects.get(user=request.user))
+
+        context = {
+            'title': 'Profile',
+            'profile': Profile.objects.get(user__username = username),
+            'user_view': User.objects.get(username = username),
+            'posts': Post.objects.filter(user__username=username),
+            'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+            'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
+        }
+
+        return render(request, 'codebase/profile.html', context)
+    else:
+        context = {
+            'title': 'Profile',
+            'profile': Profile.objects.get(user__username = username),
+            'user_view': User.objects.get(username = username),
+            'posts': Post.objects.filter(user__username=username),
+            'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+            'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
+        }
+
+        return render(request, 'codebase/profile.html', context)
+
+
+@login_required
+def unsubscribe(request, username):
+    
+    Profile.objects.get(user=request.user).subscribed.remove(Profile.objects.get(user__username=username))
+    Profile.objects.get(user__username=username).subscribers.remove(Profile.objects.get(user=request.user))
 
     context = {
         'title': 'Profile',
         'profile': Profile.objects.get(user__username = username),
         'user_view': User.objects.get(username = username),
         'posts': Post.objects.filter(user__username=username),
-        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])]
+        'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],
+        'subscribers': [subscriber for subscriber in User.objects.filter(username__in=[subscribed.user.username for subscribed in Profile.objects.get(user=request.user).subscribed.all()])]
     }
 
     return render(request, 'codebase/profile.html', context)

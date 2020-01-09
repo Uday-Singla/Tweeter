@@ -23,6 +23,13 @@
             {% else %}
               <a class="btn btn-outline-info" href="{% url 'follow' username=user_view.username %}">Follow</a>
             {% endif %}
+            {% if user_view in following %}
+              {% if user_view in subscribers %}
+                <a class="btn btn-outline-info" href="{% url 'unsubscribe' username=user_view.username %}">Unsubscribe</a>
+              {% else %}
+                <a class="btn btn-outline-info" href="{% url 'subscribe' username=user_view.username %}">Subscribe</a>
+              {% endif %}
+              {% endif %}
           </div>
         </div>
         <!-- FORM HERE -->

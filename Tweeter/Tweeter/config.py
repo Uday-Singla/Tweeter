@@ -1,0 +1,5 @@
+SENDGRID_API_KEY = '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'
+USER = 'root'
+DB_PASSWORD = 'tweet1234'
+DB_NAME = 'Tweeter_db'
+SECRET_KEY = 'm^jn)nf0+5nt=8nn_zz6g)l7)$4d=fwd)te+(z&)mio&#4hzkm'
