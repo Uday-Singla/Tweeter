@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -57,12 +57,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# AUTHENTICATION_BACKENDS=(
+AUTHENTICATION_BACKENDS=(
 # 'social_core.backends.open_id.OpenIdAuth',
 # 'social_core.backends.google.GoogleOpenId',
 # 'social_core.backends.google.GoogleOAuth2',
-# 'django.contrib.auth.backends.ModelBackend',
-# )
+'django.contrib.auth.backends.ModelBackend',
+)
 
 ROOT_URLCONF = 'Tweeter.urls'
 
@@ -138,6 +138,13 @@ USE_L10N = True
 
 USE_TZ = True
 
+SOCIALACCOUNT_PROVIDERS = \
+    {
+        'google': {
+            'SCOPE': ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+            'AUTH_PARAMS': {'access_type': 'online'}
+            }
+    }
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -167,10 +174,3 @@ SENDGRID_API_KEY = config.SENDGRID_API_KEY
 
 # echo to stdout or any other file-like object that is passed to the backend via the stream kwarg.
 SENDGRID_ECHO_TO_STDOUT=True
-
-#EMAIL_HOST = 'smtp.sendgrid.net'
-#EMAIL_HOST_USER = 'apikey'
-#EMAIL_HOST_PASSWORD = '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'
-#EMAIL_PORT = 587
-#EMAIL_USE_TLS = False
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

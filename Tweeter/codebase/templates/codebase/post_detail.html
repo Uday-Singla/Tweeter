@@ -10,6 +10,9 @@
         <a class="btn btn-default" href=#><span class="glyphicon glyphicon-pencil"></span></a>
 
         <h2>{{ post.title }}</h2>
+        {% if post_user == user %}
+                <a href="{% url 'post_edit' pk=post.pk %}"> Edit </a>
+        {% endif %}
         {% if post.image %}
             <img class="post-img" src="{{post.image.url}}">
         {% endif %}

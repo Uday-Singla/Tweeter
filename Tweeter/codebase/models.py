@@ -42,7 +42,22 @@ class Post(models.Model):
     date = models.DateTimeField(default = timezone.now, editable=False)
 
     def __str__(self):
-        return f"{self.user.username} PostID:{self.pk}"
+         return f"{self.user.username} PostID:{self.pk}"
+
+class EditHistory(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
+    content = models.TextField(blank=True)
+    image = models.ImageField(blank=True,  upload_to='post_pics_edited')
+    date = models.DateTimeField(default = timezone.now, editable=False)
+    deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.post:
+            return f"PostID:{self.post.pk} EditID:{self.pk}"
+
+    class Meta:
+        verbose_name_plural = "Edit Histories"
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

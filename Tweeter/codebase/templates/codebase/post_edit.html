@@ -1,9 +1,12 @@
 {% extends 'codebase/base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
-    <h2>New post</h2>
+    <h2>Post</h2>
     <form method="POST" enctype="multipart/form-data" class="post-form">{% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" class="save btn btn-default">Save</button>
+        <button type="submit" class="btn btn-outline-info">Save</button>
+        {% if post %}
+            <a class="btn btn-outline-info" href="{% url 'post_delete' pk=post.pk %}" >Delete this post</a>
+        {% endif %}
     </form>
 {% endblock %}

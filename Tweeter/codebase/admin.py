@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import Profile, Post, Comment
+from .models import Profile, Post, Comment, EditHistory
 
 class ProfileAdmin(admin.ModelAdmin):
     actions = ['export_xlsx', ]
@@ -49,3 +49,4 @@ class ProfileAdmin(admin.ModelAdmin):
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Post)
 admin.site.register(Comment)
+admin.site.register(EditHistory)
