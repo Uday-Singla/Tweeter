@@ -66,6 +66,7 @@ def profile(request, username):
 
 @login_required
 def explore(request):
+    # to access profile pic : request.user.socialaccount_set.filter(provider='google')[0].extra_data['picture'])
     context = {
         'profiles': Profile.objects.all(),
         'following': [follows for follows in User.objects.filter(username__in=[following.user.username for following in Profile.objects.get(user=request.user).following.all()])],

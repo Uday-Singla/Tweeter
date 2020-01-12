@@ -3,8 +3,12 @@
 {% block content %}
       <div class="content-section">
         <div class="media">
-                {% if user.socialaccount_set.exists %}
-                        <img class="rounded-circle account-img" src="{{user_view.socialaccount_set.all.0.extra_data.picture}}">
+                {% if user_view.socialaccount_set.exists %}
+                    {% if profile.dp.url == '/media/default.jpg'%}
+                        <img class="rounded-circle list-img" src="{{profile.user.socialaccount_set.all.0.extra_data.picture}}">
+                    {% else %}
+                        <img class="rounded-circle list-img" src="{{profile.dp.url}}">
+                    {% endif %}      
                 {% else %}
                         <img class="rounded-circle account-img" src="{{user_view.profile.dp.url}}">
                 {% endif %}
